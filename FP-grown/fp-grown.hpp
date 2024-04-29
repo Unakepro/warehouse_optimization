@@ -5,18 +5,37 @@
 #include "../transaction_divider.hpp"
 #include <algorithm>
 #include <unordered_map>
-
+#include <deque>
+#include <set>
 
 bool freq_comparator(const std::string& obj1, const std::string& obj2, const std::unordered_map<std::string, size_t>& freq) {
     return freq.at(obj1) > freq.at(obj2);
 }
 
-decltype(auto) get_ordered_frequency(const std::vector<std::string>& records, size_t threshold) {   
+decltype(auto) find_by_value(std::vector<std::pair<std::string, size_t>>::iterator begin, std::vector<std::pair<std::string, size_t>>::iterator end, const std::string& value) {
+    auto found = end;
+    while (begin != end)
+    {
+        if(begin->first == value) {
+            found = begin;
+            break;
+        }
+        ++begin;
+    }
+    
+    return found;
+}
+
+bool compare_size(const std::pair<std::string, size_t>& lhs, const std::pair<std::string, size_t>& rhs) {
+    return lhs.second > rhs.second;
+}
+
+decltype(auto) get_ordered_transactions(const std::vector<std::string>& records, size_t threshold) {   
     auto transactions = get_transactions(records);
     auto freq = get_transaction_frequency(records);
 
     
-    std::vector<std::vector<std::string>> ordered_freq;
+    std::vector<std::vector<std::string>> ordered;
     
     std::vector<std::string> tmp_items;
     for(auto& items: transactions) {
@@ -37,10 +56,10 @@ decltype(auto) get_ordered_frequency(const std::vector<std::string>& records, si
             return freq_comparator(lhs, rhs, freq);
         });
 
-        ordered_freq.push_back(std::move(tmp_items));
+        ordered.push_back(std::move(tmp_items));
     }
 
-    return ordered_freq;
+    return ordered;
 }
 
 
@@ -104,17 +123,47 @@ public:
 
 };
 
-
-std::map<std::string, std::vector<std::string>> getAssociation_table(const std::vector<std::string> prodcuts, FP_Tree& tree) {
-    for(const auto& product: prodcuts) {
+void getAssociation_table(const std::vector<std::string>& products, FP_Tree& tree) {
+    std::unordered_map<std::string, std::vector<std::pair<std::string, size_t>>> association_table;
+    
+    std::vector<std::pair<std::string, size_t>> products_count;
+    for(const auto& product: products) {
         auto it = tree.getPrevArr().find(product);
-
+        
         if(it == tree.getPrevArr().end()) {
-            throw std::logic_error("Element not found!");
+            continue;
         }
         
-        
+        FP_Node* node = it->second;
+        while (node != nullptr)
+        { 
+            FP_Node* parent_node = node->parent;
 
+
+            while (parent_node != nullptr && parent_node->item != "fakenode")
+            {
+                auto vec_it = find_by_value(products_count.begin(), products_count.end(), parent_node->item);
+                if(vec_it != products_count.end()) {
+                    vec_it->second += 1;
+                }
+                else {
+                    products_count.emplace_back(parent_node->item, 1);
+                }
+                parent_node = parent_node->parent;
+            }            
+            node = node->prevOccurrence;    
+        }
+        std::sort(products_count.begin(), products_count.end(), compare_size);
+        association_table.emplace(it->second->item, std::move(products_count));
+
+    }
+
+    for(auto& [item, associated_items]: association_table) {
+        std::cout << "Item " << item << ": \n";
+        for(auto& [product, count]: associated_items) {
+            std::cout << product << ' ' << count << '\n' ;
+        } 
+        std::cout << "\n\n";  
     }
 }
 
