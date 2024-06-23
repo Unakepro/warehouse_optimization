@@ -12,7 +12,7 @@ bool freq_comparator(const std::string& obj1, const std::string& obj2, const std
     return freq.at(obj1) > freq.at(obj2);
 }
 
-decltype(auto) find_by_value(std::vector<std::pair<std::string, size_t>>::iterator begin, std::vector<std::pair<std::string, size_t>>::iterator end, const std::string& value) {
+auto find_by_value(std::vector<std::pair<std::string, size_t>>::iterator begin, std::vector<std::pair<std::string, size_t>>::iterator end, const std::string& value) {
     auto found = end;
     while (begin != end)
     {
@@ -27,10 +27,10 @@ decltype(auto) find_by_value(std::vector<std::pair<std::string, size_t>>::iterat
 }
 
 bool compare_size(const std::pair<std::string, size_t>& lhs, const std::pair<std::string, size_t>& rhs) {
-    return lhs.second > rhs.second;
+    return lhs.second < rhs.second;
 }
 
-decltype(auto) get_ordered_transactions(const std::vector<std::string>& records, size_t threshold) {   
+auto get_ordered_transactions(const std::vector<std::string>& records, size_t threshold) {   
     auto transactions = get_transactions(records);
     auto freq = get_transaction_frequency(records);
 
@@ -123,10 +123,11 @@ public:
 
 };
 
-void getAssociation_table(const std::vector<std::string>& products, FP_Tree& tree) {
-    std::unordered_map<std::string, std::vector<std::pair<std::string, size_t>>> association_table;
+auto getAssociation_map(const std::vector<std::string>& products, FP_Tree& tree) {
+    std::unordered_map<std::string, std::vector<std::pair<std::string, size_t>>> association_map;
     
     std::vector<std::pair<std::string, size_t>> products_count;
+    
     for(const auto& product: products) {
         auto it = tree.getPrevArr().find(product);
         
@@ -144,7 +145,7 @@ void getAssociation_table(const std::vector<std::string>& products, FP_Tree& tre
             {
                 auto vec_it = find_by_value(products_count.begin(), products_count.end(), parent_node->item);
                 if(vec_it != products_count.end()) {
-                    vec_it->second += 1;
+                    vec_it->second += 1*node->count;
                 }
                 else {
                     products_count.emplace_back(parent_node->item, 1);
@@ -154,19 +155,11 @@ void getAssociation_table(const std::vector<std::string>& products, FP_Tree& tre
             node = node->prevOccurrence;    
         }
         std::sort(products_count.begin(), products_count.end(), compare_size);
-        association_table.emplace(it->second->item, std::move(products_count));
+        association_map.emplace(it->second->item, std::move(products_count));
 
     }
 
-    for(auto& [item, associated_items]: association_table) {
-        std::cout << "Item " << item << ": \n";
-        for(auto& [product, count]: associated_items) {
-            std::cout << product << ' ' << count << '\n' ;
-        } 
-        std::cout << "\n\n";  
-    }
+    return association_map;
 }
-
-
 
 #endif

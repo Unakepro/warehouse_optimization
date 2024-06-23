@@ -15,7 +15,6 @@ size_t manhattan_distance(const Square<square_size>& obj1, const Square<square_s
     return std::abs(obj1.getCenter().first - obj2.getCenter().first) + std::abs(obj1.getCenter().second - obj2.getCenter().second);
 }
 
-
 template <size_t square_size>
 size_t distance(const Square<square_size>& obj1, const Square<square_size>& obj2) {
     return std::sqrt(std::pow((obj2.getCenter().first - obj1.getCenter().first), 2) + std::pow((obj2.getCenter().second - obj1.getCenter().second), 2));
@@ -35,17 +34,8 @@ size_t calculate_gcost(const Square<square_size>& current, const Square<square_s
 }
 
 template <size_t square_side>
-size_t calculate_total_cost(Square<square_side>* obj) {
-    size_t counter = 0;
-    
-    while (obj != nullptr) {
-        if(obj->getParent() != nullptr) {
-            counter += calculate_gcost(*obj, *obj->getParent());
-        }
-        obj = obj->getParent();
-    }
-    
-    return counter;
+size_t calculate_total_cost(Square<square_side>* obj) {    
+    return obj->getG();
 }
 
 
