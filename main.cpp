@@ -19,20 +19,6 @@ void add_items(std::vector<Square<square_side>*> loc, std::vector<std::string>::
 }
 
 
-auto get_top_item(std::vector<std::pair<std::string, size_t>>& items_counter, std::unordered_set<std::string>& closed, size_t& i) {
-    std::pair<std::string, size_t> top_item{"none", 0};
-
-    for(; i < items_counter.size(); ++i) {
-        if(closed.find(items_counter[i].first) == closed.end()) {
-            top_item = items_counter[i];                            
-            break;
-        }
-    }
-
-    return top_item;
-}
-
-
 
 auto fp_location(std::vector<std::string>& records, std::vector<std::string>& items_by_popularity) {
     FP_Tree tree;
