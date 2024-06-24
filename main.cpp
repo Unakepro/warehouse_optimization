@@ -41,17 +41,14 @@ auto fp_location(std::vector<std::string>& records, std::vector<std::string>& it
         
         closed.emplace(product);
         result.push_back(product);
-
         if(association_map.find(product) != association_map.end()) { 
 
             std::string sel_item = "none";
             for(auto& [item, counter1]: association_map.find(product)->second) {
-
                 if(closed.find(item) == closed.end()) {
                     sel_item = item;
                     closed.emplace(item);
                     result.push_back(item);
-
                     break;
                 }
             }

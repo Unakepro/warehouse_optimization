@@ -80,7 +80,10 @@ class FP_Tree {
     std::unordered_map<std::string, FP_Node*> prev_array;
 
 public:
-    FP_Tree() = default;
+    FP_Tree() {
+        root = new FP_Node("fakenode", nullptr);
+        prev_array.emplace("fakenode", root);
+    }
 
 
     std::unordered_map<std::string, FP_Node*>& getPrevArr() {
@@ -90,12 +93,6 @@ public:
     void insert(const std::vector<std::string>& items) {
         FP_Node* current = root;
 
-        if(root == nullptr) {
-            root = new FP_Node("fakenode", nullptr);
-            prev_array.emplace("fakenode", root);
-            current = root;
-        }     
-        
         for(const auto& item: items) {            
             auto it = current->children.find(item);
             FP_Node* nextptr = nullptr;
@@ -119,7 +116,17 @@ public:
         } 
     }
 
+    ~FP_Tree() {
+        clear_tree(root);
+    }
 
+private:
+    void clear_tree(FP_Node* node) {
+        for(auto& child: node->children) {
+            clear_tree(child.second);
+        }
+        delete node;
+    }
 
 };
 
