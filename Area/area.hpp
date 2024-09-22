@@ -123,7 +123,6 @@ public:
     }
 
 
-
     static std::pair<double, double> getUpperCenter(const Square<square_side>& obj) {
         return std::pair<double, double>(obj.getCenter().first, obj.getCenter().second+square_side);
     }
@@ -156,11 +155,6 @@ public:
         return std::pair<double, double>(obj.getCenter().first-square_side, obj.getCenter().second+square_side);
     }
     
-    void reset_squares() {
-        for(size_t i = 0; i < values.size(); ++i) {
-            values[i]->reset();
-        }
-    }
 
     void print() {
         for(auto* obj: values) {
@@ -170,5 +164,6 @@ public:
     }
 
 };
+
 
 #endif
