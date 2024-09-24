@@ -13,67 +13,55 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 
-template <size_t square_side>
-void add_items(std::vector<Square<square_side>*> loc, std::vector<std::string>::iterator& it, std::unordered_map<std::string, Square<square_side>*>& data, size_t n) {
+// template <size_t square_side>
+// void add_items(std::vector<Square<square_side>*> loc, std::vector<std::string>::iterator& it, std::unordered_map<std::string, Square<square_side>*>& data, size_t n) {
     
-    for(auto* location: loc) {
-        for(size_t count = 0; count < n; ++count, ++it) {
-            data.insert(std::pair<std::string, Square<2>*>(*it, location));
-        }
-    }
+//     for(auto* location: loc) {
+//         for(size_t count = 0; count < n; ++count, ++it) {
+//             data.insert(std::pair<std::string, Square<2>*>(*it, location));
+//         }
+//     }
+// }
+
+
+template<size_t side>
+void start_state(Area<side>& warehouse, std::vector<std::string>& items, size_t items_per_shelf) {    
+    warehouse.setSquares(std::pair<size_t, size_t>(0, 1), std::pair<size_t, size_t>(0, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 3), std::pair<size_t, size_t>(8, 4));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 1), std::pair<size_t, size_t>(8, 1));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 6), std::pair<size_t, size_t>(8, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(10, 1), std::pair<size_t, size_t>(10, 6));
+
+    warehouse.setClosest(items, items_per_shelf);
 }
 
 template<size_t side>
-double total_cost(std::vector<std::string>& transactions, Square<side>* start, std::unordered_map<std::string, Square<2>*>& locations) {
-    double curr_cost = 0;
-
-    for(const auto& item: transactions) {
-        auto item_it = locations.find(item);
-        if(item_it != locations.end()) {
-                curr_cost += euclidian_distance(start, item_it->second);
-                start = item_it->second;
-        }
-        else {
-            throw std::logic_error("Not found");
-        }
-    }
-
-    return curr_cost;
-}
-
-template<size_t side>
-void start_state(Area<side>& warehouse, std::vector<std::string>& items, std::unordered_map<std::string, Square<side>*>& locations) {
-    auto it = items.begin();
-    
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(0, 1), std::pair<size_t, size_t>(0, 6)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 3), std::pair<size_t, size_t>(8, 4)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 1), std::pair<size_t, size_t>(8, 1)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 6), std::pair<size_t, size_t>(8, 6)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(10, 1), std::pair<size_t, size_t>(10, 6)), it, locations, 1);
-}
-
-template<size_t side>
-void generate_new_state(Area<side>& warehouse, std::vector<std::string>& items, std::unordered_map<std::string, Square<side>*>& locations) {
+void generate_new_state(Area<side>& warehouse, std::vector<std::string>& items, size_t items_per_shelf) {
     std::uniform_int_distribution<size_t> dist(0, items.size()-1);
 
     size_t i = dist(gen);
     size_t j = dist(gen);
 
+    size_t k = dist(gen);
+    size_t m = dist(gen);
 
-    if(i > j) {
-        std::reverse(items.begin() + j, items.end() - i);
-    }
-    else {
-        std::reverse(items.begin() + i, items.end() - j);
-    }
+    std::swap(items[i], items[j]);
+    std::swap(items[k], items[m]);
+
+    // if(i > j) {
+    //     std::reverse(items.begin() + j, items.end() - i);
+    // }
+    // else {
+    //     std::reverse(items.begin() + i, items.end() - j);
+    // }
+
+    warehouse.setSquares(std::pair<size_t, size_t>(0, 1), std::pair<size_t, size_t>(0, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 3), std::pair<size_t, size_t>(8, 4));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 1), std::pair<size_t, size_t>(8, 1));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 6), std::pair<size_t, size_t>(8, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(10, 1), std::pair<size_t, size_t>(10, 6));
     
-    auto it = items.begin();
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(0, 1), std::pair<size_t, size_t>(0, 6)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 3), std::pair<size_t, size_t>(8, 4)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 1), std::pair<size_t, size_t>(8, 1)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(2, 6), std::pair<size_t, size_t>(8, 6)), it, locations, 1);
-    add_items<side>(warehouse.getSquares(std::pair<size_t, size_t>(10, 1), std::pair<size_t, size_t>(10, 6)), it, locations, 1);
-
+    warehouse.setClosest(items, items_per_shelf);
 }
 
 bool make_transition(long double P) {
@@ -88,46 +76,30 @@ bool make_transition(long double P) {
 
 
 template<size_t side>
-void sa_optimization(double start_temp, double end_temp, double cooling_rate, size_t steps, Area<side>& warehouse, Square<side>* start) {
-    std::unordered_map<std::string, Square<side>*> locations;
-    std::vector<std::string> records;
+void sa_optimization(double start_temp, double end_temp, double cooling_rate, size_t steps, Area<side>& warehouse, std::vector<std::string>& items, size_t items_per_shelf, std::vector<std::string>& transactions) {
     
-    std::ifstream file_csv("Data/reduced_csv/train_r.csv");
-    get_records(file_csv, records);
-    file_csv.close();
+    start_state<side>(warehouse, items, items_per_shelf);
 
-    auto transactions = get_transactions(records);
-    std::vector<std::string> items;    
-    
-    std::ifstream file2("Data/products_names/reduced_pop.txt");
-    get_product_names(file2, items);
-    file2.close();
-
-    start_state<side>(warehouse, items, locations);
-
-    double currEnergy = total_cost<side>(transactions, start, locations);
+    double currEnergy = warehouse.total_cost(transactions);
     double T = start_temp;
     
+    std::cout << warehouse.total_cost(transactions) << std::endl;
+
     size_t i = 0;
     while(i < steps && currEnergy != 0) {
 
-        double newEnergy = 0;
-        
+        double newEnergy = 0;       
         Area<side> new_warehouse(warehouse.getWidth(), warehouse.getHeight());
-        std::unordered_map<std::string, Square<side>*> new_locations;
-        std::vector<std::string> new_items = items; 
-
-        generate_new_state<side>(new_warehouse, new_items, new_locations);
-     
+        std::vector<std::string> new_items = items;
         
-        newEnergy = total_cost<side>(transactions, start, new_locations);
+        generate_new_state<side>(new_warehouse, new_items, items_per_shelf);    
+        newEnergy = new_warehouse.total_cost(transactions);
         
 
         if(newEnergy < currEnergy) {
             currEnergy = newEnergy;
 
             warehouse = new_warehouse;
-            locations = std::move(new_locations);
             items = std::move(new_items);
         }
         else {
@@ -135,7 +107,6 @@ void sa_optimization(double start_temp, double end_temp, double cooling_rate, si
                 currEnergy = newEnergy;
 
                 warehouse = new_warehouse;
-                locations = std::move(new_locations);
                 items = std::move(new_items);
             }
    
@@ -149,17 +120,36 @@ void sa_optimization(double start_temp, double end_temp, double cooling_rate, si
 
         ++i;
         
-        std::cout << i << "   " << T << std::endl; 
+        std::cout << i << "   " << T << ' ' << currEnergy << std::endl; 
     }
 
-    std::cout << std::fixed << std::setprecision(5) << currEnergy << std::endl;
 }
 
 
 int main() {
     
     Area<2> warehouse(11, 7);
-    Square<2>* start = warehouse.getSquare(0, 0);
 
-    sa_optimization<2>(100000, 0.01, 0.99, 100000, warehouse, start);
+    warehouse.setSquares(std::pair<size_t, size_t>(0, 1), std::pair<size_t, size_t>(0, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 3), std::pair<size_t, size_t>(8, 4));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 1), std::pair<size_t, size_t>(8, 1));
+    warehouse.setSquares(std::pair<size_t, size_t>(2, 6), std::pair<size_t, size_t>(8, 6));
+    warehouse.setSquares(std::pair<size_t, size_t>(10, 1), std::pair<size_t, size_t>(10, 6));
+
+    warehouse.print();
+    std::vector<std::string> transactions;
+    std::vector<std::string> products;
+
+    std::ifstream file_csv("Data/train.csv");
+    get_records(file_csv, transactions);  
+    file_csv.close();
+
+    
+    std::ifstream file2("Data/products_names/most_popular.txt");
+    get_product_names(file2, products);
+    file2.close();
+
+    sa_optimization<2>(50000, 0.01, 0.99, 100000, warehouse, products, 3, transactions);
+    std::cout << warehouse.total_cost(transactions) << std::endl;
+
 }
