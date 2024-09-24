@@ -10,17 +10,6 @@
 #include <set>
 #include <unordered_map>
 
-auto get_transactions(const std::vector<std::string>& records) {
-    std::vector<std::string> transactions;
-    
-    for(size_t i = 0; i < records.size(); ++i) {        
-        ++i;
-        transactions.push_back(records[i]);
-    }
-
-    return transactions;
-}
-
 
 void get_records(std::istream& stream, std::vector<std::string>& obj) {
     std::string line;
@@ -30,7 +19,13 @@ void get_records(std::istream& stream, std::vector<std::string>& obj) {
     while (std::getline(stream, line))
     {
         std::stringstream s(line);
+
+        size_t i = 0;
         while(std::getline(s, segment, ',')) {
+            ++i;
+            if(i % 2 == 1) {
+                continue;
+            }
             obj.push_back(std::move(segment));
         }
     }
