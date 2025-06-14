@@ -11,32 +11,48 @@
 #include <unordered_map>
 
 
-void get_records(std::istream& stream, std::vector<std::string>& obj) {
-    std::string line;
-    std::string segment;
+std::vector<std::string> get_records(const std::string& path) {
+    std::ifstream in(path);
 
-    std::getline(stream, line);
-    while (std::getline(stream, line))
-    {
-        std::stringstream s(line);
+    if (!in) {
+        throw std::runtime_error("Cannot open " + path);
+    }
+    
+    std::vector<std::string> res;
+    std::string line;
+
+
+    std::getline(in, line);
+    while (std::getline(in, line)) {
+        std::stringstream ss(line);
+        std::string segment;
 
         size_t i = 0;
-        while(std::getline(s, segment, ',')) {
-            ++i;
+        while(std::getline(ss, segment, ',')) {
             if(i % 2 == 1) {
-                continue;
+                res.push_back(std::move(segment));
             }
-            obj.push_back(std::move(segment));
+            ++i;
         }
     }
+
+    return res;
 }
 
-void get_product_names(std::istream& stream, std::vector<std::string>& obj) {
-    std::string product;
+std::vector<std::string> read_lines(const std::string& path) {
+    std::ifstream in(path);
+    if(!in) {
+        throw std::runtime_error("Cannot open" + path);
+    } 
 
-    while(std::getline(stream, product)) {
-        obj.push_back(std::move(product));
+    std::vector<std::string> res;
+    std::string s;
+
+    while(std::getline(in, s)) {
+        res.push_back(std::move(s));
     }
+
+    return res;
 }
 
 #endif
